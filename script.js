@@ -1,62 +1,71 @@
-//your code here
-const imageUrls = [
-    "https://picsum.photos/id/237/200/300",
-    "https://picsum.photos/seed/picsum/200/300",
-    "https://picsum.photos/200/300?grayscale",
-    "https://picsum.photos/200/300/",
-    "https://picsum.photos/200/300.jpg"
-];
+document.addEventListener("DOMContentLoaded", function () {
+    let main_val = document.querySelector("#main_id");
+    let btn_ret = document.querySelector("#reset");
+    let verify_btn = document.querySelector("#verify");
+    let result_msg = document.querySelector("#result"); // Message area
 
-let images = [...imageUrls];
-let duplicate = images[Math.floor(Math.random() * images.length)];
-images.push(duplicate);
-images.sort(() => Math.random() - 0.5);
+    // Clear previous content
+    main_val.innerHTML = '';
 
-const main = document.getElementById("main_id");
-const resetBtn = document.getElementById("reset");
-const verifyBtn = document.getElementById("verify");
-const resultPara = document.getElementById("para");
+    // Create and append 5 original image divs
+    let imgClasses = ["img1", "img2", "img3", "img4", "img5"];
+    let imgs = imgClasses.map(cls => {
+        let div = document.createElement("div");
+        div.classList.add(cls, "img");
+        main_val.appendChild(div);
+        return div;
+    });
 
-let selectedImages = [];
+    // Pick a random image and duplicate it
+    let randomeIndex = Math.floor(Math.random() * imgs.length);
+    let randomeImg = imgs[randomeIndex].cloneNode(true);
+    randomeImg.classList.add("img6");
+    main_val.appendChild(randomeImg);
 
-images.forEach((src, index) => {
-    let img = document.createElement("img");
-    img.src = src;
-    img.classList.add("img");
-    img.dataset.index = index;
-    img.addEventListener("click", selectImage);
-    main.appendChild(img);
-});
+    let full_arry = [...imgs, randomeImg];
+    let selectedImages = [];
+    let final_ans = 0;
 
-function selectImage(event) {
-    let img = event.target;
-    if (!img.classList.contains("selected")) {
-        img.classList.add("selected");
-        selectedImages.push(img);
-    } else {
-        img.classList.remove("selected");
-        selectedImages = selectedImages.filter(i => i !== img);
-    }
+    main_val.addEventListener("click", function (event) {
+        if (event.target.classList.contains("img")) {
+            event.target.classList.toggle("selected");
 
-    resetBtn.style.display = selectedImages.length > 0 ? "block" : "none";
-    verifyBtn.style.display = selectedImages.length === 2 ? "block" : "none";
-}
+            let selected = document.querySelectorAll(".selected");
+            if (selected.length > 2) {
+                selected[0].classList.remove("selected");
+            }
 
-resetBtn.addEventListener("click", () => {
-    selectedImages.forEach(img => img.classList.remove("selected"));
-    selectedImages = [];
-    resetBtn.style.display = "none";
-    verifyBtn.style.display = "none";
-    resultPara.textContent = "";
-});
+            selectedImages = [...document.querySelectorAll(".selected")].map(el => el.classList[0]);
 
-verifyBtn.addEventListener("click", () => {
-    verifyBtn.style.display = "none";
-    if (selectedImages.length === 2 && selectedImages[0].src === selectedImages[1].src) {
-        resultPara.textContent = "You are a human. Congratulations!";
-    } else {
-        resultPara.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
-    }
-    selectedImages.forEach(img => img.classList.remove("selected"));
-    selectedImages = [];
+            btn_ret.style.display = selectedImages.length > 0 ? "block" : "none";
+            verify_btn.style.display = selectedImages.length === 2 ? "block" : "none";
+
+            if (selectedImages.length === 2) {
+                final_ans = selectedImages[0] === selectedImages[1] ? 1 : 0;
+            }
+        }
+    });
+
+    // **Verify Button Click**
+    verify_btn.addEventListener("click", function () {
+        if (selectedImages.length === 2) {
+            if (final_ans === 1) {
+                result_msg.textContent = "You are a human. Congratulations!";
+                result_msg.style.color = "green";
+            } else {
+                result_msg.textContent = "We can't verify you as a human. You selected the non-identical tiles.";
+                result_msg.style.color = "red";
+            }
+            verify_btn.style.display = "none"; // Hide verify button after checking
+        }
+    });
+
+    // **Reset Button Click**
+    btn_ret.addEventListener("click", function () {
+        document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
+        btn_ret.style.display = "none";
+        verify_btn.style.display = "none";
+        result_msg.textContent = ""; // Clear the result message
+        selectedImages = [];
+    });
 });
